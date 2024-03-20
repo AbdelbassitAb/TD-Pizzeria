@@ -1,0 +1,73 @@
+import unittest
+from unittest.mock import Mock
+
+
+class CartePizzeriaException(Exception):
+    pass
+
+
+class CartePizzeria:
+    def __init__(self):
+        self.pizzas = []
+
+    def is_empty(self):
+        return len(self.pizzas) == 0
+
+    def nb_pizzas(self):
+        return len(self.pizzas)
+
+    def add_pizza(self, pizza):
+        self.pizzas.append(pizza)
+
+    def remove_pizza(self, name):
+        for pizza in self.pizzas:
+            if pizza.name == name:
+                self.pizzas.remove(pizza)
+                return
+        raise CartePizzeriaException(
+            f"La pizza '{name}' n'existe pas dans la carte de la pizzeria."
+        )
+
+
+class Pizza:
+    def __init__(self, name, ingredients):
+        self.name = name
+        self.ingredients = ingredients
+
+
+class TestCartePizzeria(unittest.TestCase):
+    def test_is_empty(self):
+        carte = CartePizzeria()
+        self.assertTrue(carte.is_empty())
+
+        mock_pizza = Mock()
+        carte.add_pizza(mock_pizza)
+        self.assertFalse(carte.is_empty())
+
+    def test_nb_pizzas(self):
+        carte = CartePizzeria()
+        self.assertEqual(carte.nb_pizzas(), 0)
+
+        mock_pizza1 = Mock()
+        mock_pizza2 = Mock()
+        carte.add_pizza(mock_pizza1)
+        carte.add_pizza(mock_pizza2)
+        self.assertEqual(carte.nb_pizzas(), 2)
+
+    def test_add_pizza(self):
+        carte = CartePizzeria()
+        mock_pizza = Mock()
+        carte.add_pizza(mock_pizza)
+        self.assertIn(mock_pizza, carte.pizzas)
+
+    def test_remove_existing_pizza(self):
+        carte = CartePizzeria()
+        mock_pizza = Mock(name="Margherita")
+        carte.add_pizza(mock_pizza)
+        carte.remove_pizza("Margherita")
+        self.assertNotIn(mock_pizza, carte.pizzas)
+
+    def test_remove_non_existing_pizza(self):
+        carte = CartePizzeria()
+        with self.assertRaises(CartePizzeriaException):
+            carte.remove_pizza("Hawaiienne")
